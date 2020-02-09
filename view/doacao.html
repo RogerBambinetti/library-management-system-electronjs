@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Doação</h2>
+        </div>
+        <div class="column one">
+            <label>Usuário:</label>
+            <select id="fkUsuario" onchange="preencher()">
+                <option value="0">Selecione um usuário</option>
+            </select>
+        </div>
+        <div class="column two">
+            <table>
+                <tbody id="tabela">
+        
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlEmprestimo = require('../control/ControlEmprestimo');
+    var ControlUsuario = require('../control/ControlUsuario');
+
+    var controlEmprestimo = new ControlEmprestimo();
+    var controlUsuario = new ControlUsuario();
+
+    var usuarios = controlUsuario.listarComDebito();
+
+    usuarios.forEach(u => {
+        document.getElementById("fkUsuario").innerHTML += '<option value="' + u.pkUsuario + '">' + u.nome + '</option>';
+    });
+
+    function preencher() {
+        document.getElementById("tabela").innerHTML = '<tr><th>Exemplar</th><th>Empréstimo</th><th>Devolução</th><th>Débito</th><th>Ações</th></tr>';
+        var emprestimos = controlEmprestimo.listarDebito(document.getElementById("fkUsuario").value);
+        emprestimos.forEach(e => {
+            var em = new Date(e.emprestimo);
+            var emprestimo = em.getDate() + '-' + (em.getMonth() + 1) + '-' + em.getFullYear();
+            var d = new Date(e.devolucao);
+            var devolucao = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear();
+            document.getElementById("tabela").innerHTML += '<tr> <td>' + e.fkExemplar + '</td> <td>' + emprestimo + '</td> <td>' + devolucao + '</td> <td>' + e.debito + '</td> <td><button id="' + e.pkEmprestimo + '" onclick="quitar(this.id)">Quitar</button></td> </tr>';
+        });
+    }
+
+    function quitar(pkEmprestimo) {
+        if (controlEmprestimo.quitarDebito(pkEmprestimo)) {
+            dialog.showMessageBox({ message: "Débito quitado" });
+        }
+        preencher();
+    }
+
+
+</script>

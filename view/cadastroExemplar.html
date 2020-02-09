@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Cadastro de exemplar</h2>
+        </div>
+        <div class="column one">
+            <label>Obra:</label>
+            <select id="fkObra">
+            </select>
+            <label>Quantidade:</label>
+            <input type="number" id="quantidade">
+            <button type="button" onclick="cadastrar()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlExemplar = require('../control/ControlExemplar');
+    var ControlObra = require('../control/ControlObra');
+
+    var controlExemplar = new ControlExemplar();
+    var controlObra = new ControlObra();
+
+    var obras = controlObra.listar();
+
+    obras.forEach(o => {
+        document.getElementById("fkObra").innerHTML += '<option value="' + o.pkObra + '">' + o.titulo + '</option>';
+    });
+
+    function cadastrar() {
+        var fkObra = document.getElementById("fkObra").value;
+        var quantidade = document.getElementById("quantidade").value;
+
+        if (quantidade == 0) {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        var cont = 0;
+        for (var i = 0; i < quantidade; i++) {
+            var numero = (controlExemplar.contar(fkObra)) + 1;
+            if (controlExemplar.inserir(numero, fkObra)) {
+                cont++;
+            }
+        }
+        if (cont > 0) {
+            var ultimosExemplares = controlExemplar.listarUltimos(quantidade);
+            var mensagem = "";
+            ultimosExemplares.forEach(e => {
+                var situacao;
+                mensagem += "Exemplar " + e.numero + " - " + e.pkExemplar + "\n";
+            });
+            if (ultimosExemplares.length != 0) {
+                dialog.showMessageBox({ message: mensagem });
+            }
+            dialog.showMessageBox({ message: "Cadastrado" });
+        }
+    }
+
+</script>

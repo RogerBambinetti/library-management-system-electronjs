@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Relatório de obras</h2>
+        </div>
+
+        <table>
+            <tbody id="tabela">
+                <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Gênero</th>
+                    <th>Editora</th>
+                    <th>Classificação</th>
+                    <th>Ano</th>
+                    <th>Ações</th>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlAutor = require('../control/ControlAutor');
+    var ControlEditora = require('../control/ControlEditora');
+    var ControlGenero = require('../control/ControlGenero');
+    var ControlObra = require('../control/ControlObra');
+
+    var controlAutor = new ControlAutor();
+    var controlEditora = new ControlEditora();
+    var controlGenero = new ControlGenero();
+    var controlObra = new ControlObra();
+
+    preencher();
+
+    function preencher() {
+
+        var obras = controlObra.listar();
+
+        document.getElementById("tabela").innerHTML = "<tr><th>Título</th><th>Autor</th><th>Gênero</th><th>Editora</th><th>Classificação</th><th>Ano</th><th>Ações</th></tr>";
+
+        obras.forEach(o => {
+            var autor;
+            var editora;
+            var genero;
+
+            if (controlAutor.selecionar(o.fkAutor) == false) {
+                autor = "Autor deletado";
+            } else {
+                autor = controlAutor.selecionar(o.fkAutor)[0].nome;
+            }
+
+            if (controlEditora.selecionar(o.fkEditora) == false) {
+                editora = "Editora deletada";
+            } else {
+                editora = controlEditora.selecionar(o.fkEditora)[0].nome;
+            }
+
+            if (controlGenero.selecionar(o.fkGenero) == false) {
+                genero = "Gênero deletado";
+            } else {
+                genero = controlGenero.selecionar(o.fkGenero)[0].nome;
+            }
+
+            document.getElementById("tabela").innerHTML += '<tr><td>' + o.titulo + '</td> <td>' + autor + '</td> <td>' + genero + '</td> <td>' + editora + '</td> <td>' + o.classificacao + '</td> <td>' + o.ano + '</td> <td><button id="' + o.pkObra + '" onclick="excluir(this.id)">Excluir</button></td></tr>';
+        });
+    }
+
+    function excluir(pkObra) {
+        var confirmacao = dialog.showMessageBox({ buttons: ["Não", "Sim"], message: "Você realmente deseja excluir isso?" });
+        if (confirmacao) {
+            controlObra.excluir(pkObra);
+            preencher();
+        }
+    }
+</script>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Relatório de autores</h2>
+        </div>
+
+        <table>
+            <tbody id="tabela">
+                <tr>
+                    <th>Nome</th>
+                    <th>Ações</th>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlAutor = require('../control/ControlAutor');
+
+    var controlAutor = new ControlAutor();
+
+    preencher();
+
+    function preencher() {
+        var autores = controlAutor.listar();
+
+        document.getElementById("tabela").innerHTML = "<tr><th>Nome</th><th>Ações</th></tr>";
+
+        autores.forEach(a => {
+            document.getElementById("tabela").innerHTML += '<tr><td>' + a.nome + '</td> <td><button id="' + a.pkAutor + '" onclick="excluir(this.id)">Excluir</button></td></tr>';
+        });
+    }
+
+    function excluir(pkAutor) {
+        var confirmacao = dialog.showMessageBox({ buttons: ["Não", "Sim"], message: "Você realmente deseja excluir isso?" });
+        if (confirmacao) {
+            controlAutor.excluir(pkAutor);
+            preencher();
+        }
+    }
+
+</script>

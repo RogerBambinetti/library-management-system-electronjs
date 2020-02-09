@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Configuração</h2>
+        </div>
+        <div class="column one">
+            <label>Valor do débito:</label>
+            <input type="number" id="valorDebito">
+            <label>Número máximo de renovações:</label>
+            <input type="number" id="maximoRenovacoes">
+            <label>Dias para empréstimo:</label>
+            <input type="number" id="diasEmprestimo">
+            <label>Dias para renovação:</label>
+            <input type="number" id="diasRenovacao">
+            <button type="button" onclick="editar()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlConfiguracao = require('../control/ControlConfiguracao');
+
+    var controlConfiguracao = new ControlConfiguracao();
+
+    document.getElementById("valorDebito").value = controlConfiguracao.selecionar()[0].valorDebito;
+    document.getElementById("maximoRenovacoes").value = controlConfiguracao.selecionar()[0].maximoRenovacoes;
+    document.getElementById("diasEmprestimo").value = controlConfiguracao.selecionar()[0].diasEmprestimo;
+    document.getElementById("diasRenovacao").value = controlConfiguracao.selecionar()[0].diasRenovacao;
+
+    function editar() {
+        var valorDebito = document.getElementById("valorDebito").value;
+        var maximoRenovacoes = document.getElementById("maximoRenovacoes").value;
+        var diasEmprestimo = document.getElementById("diasEmprestimo").value;
+        var diasRenovacao = document.getElementById("diasRenovacao").value;
+        if (controlConfiguracao.editar(maximoRenovacoes, valorDebito, diasRenovacao, diasEmprestimo)) {
+            dialog.showMessageBox({ message: "Editado" });
+        } else {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+    }
+</script>

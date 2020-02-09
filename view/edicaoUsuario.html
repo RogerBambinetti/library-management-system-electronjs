@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Edição de usuário</h2>
+        </div>
+        <div class="column one">
+            <label>Usuário:</label>
+            <select id="pkUsuario" onchange="atualizar()">
+            </select>
+            <label>Nome:</label>
+            <input type="text" id="nome">
+            <label>Nascimento:</label>
+            <input type="date" id="nascimento">
+            <label>Tipo:</label>
+            <select id="tipo">
+                <option value="0">Aluno</option>
+                <option value="1">Professor</option>
+            </select>
+            <button type="button" onclick="editar()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlUsuario = require('../control/ControlUsuario');
+
+    var controlUsuario = new ControlUsuario();
+
+    function preencher() {
+        var generos = controlUsuario.listar();
+        document.getElementById("pkUsuario").innerHTML = '';
+        generos.forEach(g => {
+            document.getElementById("pkUsuario").innerHTML += '<option value="' + g.pkUsuario + '">' + g.nome + '</option>';
+        });
+    }
+
+    preencher();
+    atualizar();
+
+    function atualizar() {
+        var usuario = controlUsuario.selecionar(document.getElementById("pkUsuario").value)[0];
+        var n = new Date(usuario.nascimento);
+        var dia;
+        var mes;
+        if (n.getDate() < 10) {
+            dia = "0" + n.getDate();
+        } else {
+            dia = n.getDate();
+        }
+        if (n.getMonth() + 1 < 10) {
+            mes = "0" + n.getMonth();
+        } else {
+            mes = n.getMonth() + 1;
+        }
+        document.getElementById("nome").value = usuario.nome;
+        document.getElementById("nascimento").value = n.getFullYear() + "-" + mes + "-" + dia;
+        document.getElementById("tipo").value = usuario.tipo;
+    }
+
+    function editar() {
+        var pkUsuario = document.getElementById("pkUsuario").value;
+        var nome = document.getElementById("nome").value;
+        var nascimento = document.getElementById("nascimento").value;
+        var tipo = document.getElementById("tipo").value;
+        if (controlUsuario.editar(pkUsuario, nome, nascimento, tipo)) {
+            dialog.showMessageBox({ message: "Editado" });
+        } else {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        preencher();
+        atualizar();
+    }
+
+</script>

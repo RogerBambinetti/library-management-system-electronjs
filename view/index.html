@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="menu" id="Menu">
+        <div class="logo">
+            <img src="../assets/logo.png">
+        </div>
+        <a href="#" id="consulta" onclick="redirect(this.id)"><img src="../assets/icons/search.svg">Consulta</a>
+        <button class="dropdown-btn"><img src="../assets/icons/register.svg">Cadastro</button>
+        <div class="dropdown-container">
+            <a href="#" id="cadastroObra" onclick="redirect(this.id)">Obra</a>
+            <a href="#" id="cadastroExemplar" onclick="redirect(this.id)">Exemplar</a>
+            <a href="#" id="cadastroUsuario" onclick="redirect(this.id)">Usuário</a>
+        </div>
+        <button class="dropdown-btn"><img src="../assets/icons/edit.svg">Edição</button>
+        <div class="dropdown-container">
+            <a href="#" id="edicaoAutor" onclick="redirect(this.id)">Autor</a>
+            <a href="#" id="edicaoEditora" onclick="redirect(this.id)">Editora</a>
+            <a href="#" id="edicaoGenero" onclick="redirect(this.id)">Gênero</a>
+            <a href="#" id="edicaoObra" onclick="redirect(this.id)">Obra</a>
+            <a href="#" id="edicaoUsuario" onclick="redirect(this.id)">Usuário</a>
+        </div>
+        <a href="#" id="emprestimo" onclick="redirect(this.id)"><img src="../assets/icons/loan.svg">Empréstimo</a>
+        <a href="#" id="renovacao" onclick="redirect(this.id)"><img src="../assets/icons/renovation.svg">Renovação</a>
+        <a href="#" id="devolucao" onclick="redirect(this.id)"><img src="../assets/icons/devolution.svg">Devolução</a>
+        <a href="#" id="doacao" onclick="redirect(this.id)"><img src="../assets/icons/donation.svg">Doação</a>
+        <button class="dropdown-btn"><img src="../assets/icons/reports.svg">Relatórios</button>
+        <div class="dropdown-container">
+            <a href="#" id="relatorioAutores" onclick="redirect(this.id)">Autores</a>
+            <a href="#" id="relatorioEditoras" onclick="redirect(this.id)">Editoras</a>
+            <a href="#" id="relatorioEmprestimos" onclick="redirect(this.id)">Empréstimos</a>
+            <a href="#" id="relatorioExemplares" onclick="redirect(this.id)">Exemplares</a>
+            <a href="#" id="relatorioGeneros" onclick="redirect(this.id)">Gêneros</a>
+            <a href="#" id="relatorioObras" onclick="redirect(this.id)">Obras</a>
+            <a href="#" id="relatorioUsuarios" onclick="redirect(this.id)">Usuários</a>
+        </div>
+        <a href="#" id="configuracao" onclick="redirect(this.id)"><img
+                src="../assets/icons/configuration.svg">Configuração</a>
+    </div>
+
+    <webview src="./consulta.html" class="frame" id="frame" nodeintegration></webview>
+
+</body>
+
+</html>
+<script>
+    var dropdown = document.getElementsByClassName("dropdown-btn");
+    for (var i = 0; i < dropdown.length; i++) {
+        dropdown[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            var dropdownContent = this.nextElementSibling;
+            if (dropdownContent.style.display === "block") {
+                dropdownContent.style.display = "none";
+            } else {
+                dropdownContent.style.display = "block";
+            }
+        });
+    }
+</script>
+
+<script>
+    function redirect(id) {
+        document.getElementById("frame").src = id + ".html";
+    }
+</script>

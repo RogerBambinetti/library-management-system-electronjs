@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Renovação</h2>
+        </div>
+        <div class="column one">
+            <form>
+                <label>Exemplar:</label>
+                <input type="number" id="fkExemplar">
+                <button type="button" onclick="renovar()">Concluir</button>
+            </form>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlConfiguracao = require('../control/ControlConfiguracao');
+    var ControlEmprestimo = require('../control/ControlEmprestimo');
+
+    var controlConfiguracao = new ControlConfiguracao();
+    var controlEmprestimo = new ControlEmprestimo();
+
+    function renovar() {
+        var fkExemplar = document.getElementById("fkExemplar").value;
+        var diasRenovacao = controlConfiguracao.selecionar()[0].diasRenovacao;
+        var maximoRenovacoes = controlConfiguracao.selecionar()[0].maximoRenovacoes;
+        if (fkExemplar.length == 0) {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        if (controlEmprestimo.contar(fkExemplar) == 0) {
+            dialog.showMessageBox({ message: "Exemplar não emprestado" });
+        } else {
+            var devolucao = new Date(controlEmprestimo.selecionarPorExemplar(fkExemplar).devolucao);
+            var dataAtual = new Date();
+            if (dataAtual > devolucao) {
+                dialog.showMessageBox({ message: "Empréstimo não renovado, devolução atrasada" });
+            } else {
+                if (controlEmprestimo.verificaRenovacoes(fkExemplar, maximoRenovacoes)) {
+                    controlEmprestimo.renovar(fkExemplar, diasRenovacao);
+                    dialog.showMessageBox({ message: "Empréstimo renovado" });
+                } else {
+                    dialog.showMessageBox({ message: "Empréstimo não renovado, limite de renovações excedido" });
+                }
+            }
+        }
+
+    }
+
+</script>

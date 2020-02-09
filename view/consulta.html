@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container" id="container">
+        <div class="title">
+            <h2>Consulta</h2>
+        </div>
+        <div class="search">
+            <button type="button" onclick="consultar()"><img src="../assets/icons/search.svg"></button>
+            <input type="text" id="termo">
+        </div>
+        <div class="result" id="result"></div>
+    </div>
+
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlAutor = require('../control/ControlAutor');
+    var ControlEditora = require('../control/ControlEditora');
+    var ControlEmprestimo = require('../control/ControlEmprestimo');
+    var ControlExemplar = require('../control/ControlExemplar');
+    var ControlGenero = require('../control/ControlGenero');
+    var ControlObra = require('../control/ControlObra');
+
+    var controlAutor = new ControlAutor();
+    var controlEditora = new ControlEditora();
+    var controlEmprestimo = new ControlEmprestimo();
+    var controlExemplar = new ControlExemplar();
+    var controlGenero = new ControlGenero();
+    var controlObra = new ControlObra();
+
+    function consultar() {
+        document.getElementById("result").innerHTML = "";
+        var termo = document.getElementById("termo").value;
+        var obras = controlObra.consultar(termo);
+        if (termo.length != 0) {
+            if (obras.length == 0) {
+                document.getElementById("result").innerHTML += '<div class="noresult"> <p>Nenhum resultado para "' + termo + '"</p> </div>';
+            } else {
+                obras.forEach(o => {
+                    var a;
+                    var e;
+                    var g;
+
+                    if (controlAutor.selecionar(o.fkAutor) == false) {
+                        a = "Autor deletado";
+                    } else {
+                        a = controlAutor.selecionar(o.fkAutor)[0].nome;
+                    }
+
+                    if (controlEditora.selecionar(o.fkEditora) == false) {
+                        e = "Editora deletada";
+                    } else {
+                        e = controlEditora.selecionar(o.fkEditora)[0].nome;
+                    }
+
+                    if (controlGenero.selecionar(o.fkGenero) == false) {
+                        g = "Gênero deletado";
+                    } else {
+                        g = controlGenero.selecionar(o.fkGenero)[0].nome;
+                    }
+
+                    document.getElementById("result").innerHTML += '<div class="content" id="' + o.pkObra + '" onclick="modal(this.id)"> <div class="image"></div> <div class="text"> <h3>' + o.titulo + '</h3> <p> Autor: ' + a + '<br> Classificação: ' + o.classificacao + ' <br> Editora: ' + e + ' <br> Exemplares: ' + controlExemplar.contar(o.pkObra) + ' <br> Gênero: ' + g + '<br> Ano: ' + o.ano + ' </p> </div> <div class="clear"></div> </div>';
+                });
+            }
+        } else {
+            document.getElementById("result").innerHTML += '<div class="noresult"> <p>Digite algum termo para a consulta</p> </div>';
+        }
+    }
+
+    function modal(id) {
+        var exemplares = controlExemplar.selecionarFkObra(id);
+        var mensagem = "";
+        exemplares.forEach(e => {
+            var situacao;
+            if (controlEmprestimo.contar(e.pkExemplar) > 0) {
+                situacao = "emprestado";
+            } else {
+                situacao = "disponível";
+            }
+            mensagem += "Exemplar " + e.numero + " - " + e.pkExemplar + " - " + situacao + "\n";
+        });
+        if (exemplares.length != 0) {
+            dialog.showMessageBox({ message: mensagem });
+        }
+    }
+
+</script>

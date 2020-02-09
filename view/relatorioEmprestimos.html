@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Relatório de empréstimos</h2>
+        </div>
+
+        <table>
+            <tbody id="tabela">
+                <tr>
+                    <th>Usuário</th>
+                    <th>Exemplar</th>
+                    <th>Empréstimo</th>
+                    <th>Devolução</th>
+                    <th>Situação</th>
+                    <th>Débito</th>
+                    <th>Renovações</th>
+                    <th>Ações</th>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlEmprestimo = require('../control/ControlEmprestimo');
+    var ControlUsuario = require('../control/ControlUsuario');
+    var ControlConfiguracao = require('../control/ControlConfiguracao');
+
+    var controlEmprestimo = new ControlEmprestimo();
+    var controlUsuario = new ControlUsuario();
+    var controlConfiguracao = new ControlConfiguracao();
+
+    preencher();
+
+    function preencher() {
+
+        var emprestimos = controlEmprestimo.listar();
+
+        document.getElementById("tabela").innerHTML = "<tr><th>Usuário</th><th>Exemplar</th><th>Empréstimo</th><th>Devolução</th><th>Situação</th><th>Débito</th><th>Renovações</th><th>Ações</th></tr>";
+
+        emprestimos.forEach(e => {
+            var em = new Date(e.emprestimo);
+            var emprestimo = em.getDate() + '-' + (em.getMonth() + 1) + '-' + em.getFullYear();
+            var d = new Date(e.devolucao);
+            var devolucao = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear();
+            var situacao;
+            var debito;
+            var nome;
+
+            if (e.situacao) {
+                var dt1 = d;
+                var dt2 = new Date();
+                situacao = "Emprestado";
+                if (dt1 < dt2) {
+                    debito = (Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate())) / (1000 * 60 * 60 * 24)) * controlConfiguracao.selecionar()[0].valorDebito);
+                } else {
+                    debito = e.debito;
+                }
+            } else {
+                situacao = "Devolvido";
+                debito = e.debito;
+            }
+
+            if (controlUsuario.selecionar(e.fkUsuario) == false) {
+                nome = "Usuário deletado";
+            } else {
+                nome = controlUsuario.selecionar(e.fkUsuario)[0].nome;
+            }
+
+            document.getElementById("tabela").innerHTML += '<tr> <td>' + nome + '</td> <td>' + e.fkExemplar + '</td> <td>' + emprestimo + '</td> <td>' + devolucao + '</td> <td>' + situacao + '</td> <td>R$ ' + debito + '</td> <td>' + e.renovacoes + '</td> <td><button id="' + e.pkEmprestimo + '" onclick="excluir(this.id)">Excluir</button></td> </tr>';
+        });
+    }
+
+    function excluir(pkEmprestimo) {
+        if (controlEmprestimo.selecionar(pkEmprestimo)[0].situacao) {
+            dialog.showMessageBox({ message: "Empréstimo pendente, impossível excluir" });
+        } else {
+            var confirmacao = dialog.showMessageBox({ buttons: ["Não", "Sim"], message: "Você realmente deseja excluir isso?" });
+            if (confirmacao) {
+                controlEmprestimo.excluir(pkEmprestimo);
+                preencher();
+            }
+        }
+    }
+</script>

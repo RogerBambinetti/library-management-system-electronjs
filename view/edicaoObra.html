@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Edição de obra</h2>
+        </div>
+        <div class="column one">
+            <label>Obra:</label>
+            <select id="pkObra" onchange="atualizar()">
+            </select>
+            <label>Título:</label>
+            <input type="text" id="titulo">
+            <label>Classificação:</label>
+            <input type="number" id="classificacao">
+            <label>Ano:</label>
+            <input type="number" id="ano">
+            <label>Autor:</label>
+            <select id="fkAutor">
+            </select>
+        </div>
+        <div class="column two">
+            <label>Editora:</label>
+            <select id="fkEditora">
+            </select>
+            <label>Gênero:</label>
+            <select id="fkGenero">
+            </select>
+            <button type="button" onclick="editar()">Concluir</button>
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlAutor = require('../control/ControlAutor');
+    var ControlEditora = require('../control/ControlEditora');
+    var ControlGenero = require('../control/ControlGenero');
+    var ControlObra = require('../control/ControlObra');
+
+
+    var controlAutor = new ControlAutor();
+    var controlEditora = new ControlEditora();
+    var controlGenero = new ControlGenero();
+    var controlObra = new ControlObra();
+
+    var autores = controlAutor.listar();
+    var editoras = controlEditora.listar();
+    var generos = controlGenero.listar();
+
+    autores.forEach(a => {
+        document.getElementById("fkAutor").innerHTML += '<option value="' + a.pkAutor + '">' + a.nome + '</option>';
+    });
+    editoras.forEach(e => {
+        document.getElementById("fkEditora").innerHTML += '<option value="' + e.pkEditora + '">' + e.nome + '</option>';
+    });
+    generos.forEach(g => {
+        document.getElementById("fkGenero").innerHTML += '<option value="' + g.pkGenero + '">' + g.nome + '</option>>';
+    });
+
+    function preencher() {
+        var obras = controlObra.listar();
+        document.getElementById("pkObra").innerHTML = '';
+        obras.forEach(o => {
+            document.getElementById("pkObra").innerHTML += '<option value="' + o.pkObra + '">' + o.titulo + '</option>';
+        });
+    }
+
+    preencher();
+    atualizar();
+
+    function atualizar() {
+        var obra = controlObra.selecionar(document.getElementById("pkObra").value)[0];
+        document.getElementById("titulo").value = obra.titulo;
+        document.getElementById("classificacao").value = obra.classificacao;
+        document.getElementById("ano").value = obra.ano;
+        document.getElementById("fkAutor").value = obra.fkAutor;
+        document.getElementById("fkEditora").value = obra.fkEditora;
+        document.getElementById("fkGenero").value = obra.fkGenero;
+    }
+
+    function editar() {
+        var pkObra = document.getElementById("pkObra").value;
+        var titulo = document.getElementById("titulo").value;
+        var classificacao = document.getElementById("classificacao").value;
+        var ano = document.getElementById("ano").value;
+        var fkAutor = document.getElementById("fkAutor").value;
+        var fkEditora = document.getElementById("fkEditora").value;
+        var fkGenero = document.getElementById("fkGenero").value;
+        if (controlObra.editar(pkObra, titulo, classificacao, ano, fkGenero, fkEditora, fkAutor)) {
+            dialog.showMessageBox({ message: "Editado" });
+        } else {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        preencher();
+        atualizar();
+    }
+
+</script>

@@ -1,0 +1,32 @@
+{
+  "name": "biblioteca",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^5.0.5",
+    "electron-builder": "^21.2.0",
+    "electron-packager": "^14.0.5"
+  },
+  "dependencies": {
+    "sqlite-sync": "^0.3.9",
+    "sqlite3": "^4.0.9"
+  },
+  "build": {
+    "appId": "your.id",
+    "mac": {
+      "category": "your.app.category.type"
+    },
+    "win": {
+      "icon": "./build/icon.png"
+    }
+  },
+  "postinstall": "electron-builder install-app-deps"
+}

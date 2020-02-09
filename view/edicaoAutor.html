@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Edição de autor</h2>
+        </div>
+        <div class="column one">
+            <label>Autor:</label>
+            <select id="pkAutor" onchange="atualizar()">
+            </select>
+            <label>Nome:</label>
+            <input type="text" id="nome">
+            <button type="button" onclick="editar()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlAutor = require('../control/ControlAutor');
+
+    var controlAutor = new ControlAutor();
+
+    function preencher() {
+        var autores = controlAutor.listar();
+        document.getElementById("pkAutor").innerHTML = '';
+        autores.forEach(a => {
+            document.getElementById("pkAutor").innerHTML += '<option value="' + a.pkAutor + '">' + a.nome + '</option>';
+        });
+    }
+
+    preencher();
+    atualizar();
+
+    function atualizar() {
+        var autor = controlAutor.selecionar(document.getElementById("pkAutor").value)[0];
+        document.getElementById("nome").value = autor.nome;
+    }
+
+    function editar() {
+        var pkAutor = document.getElementById("pkAutor").value;
+        var nome = document.getElementById("nome").value;
+        if (controlAutor.editar(pkAutor, nome)) {
+            dialog.showMessageBox({ message: "Editado" });
+        } else {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        preencher();
+        atualizar();
+    }
+
+</script>

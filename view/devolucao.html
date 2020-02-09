@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Devolução</h2>
+        </div>
+        <div class="column one">
+            <label>Exemplar:</label>
+            <input type="number" id="fkExemplar">
+            <button type="button" onclick="devolver()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlConfiguracao = require('../control/ControlConfiguracao');
+    var ControlEmprestimo = require('../control/ControlEmprestimo');
+
+    var controlConfiguracao = new ControlConfiguracao();
+    var controlEmprestimo = new ControlEmprestimo();
+
+    function devolver() {
+        var fkExemplar = document.getElementById("fkExemplar").value;
+        if (controlEmprestimo.contar(fkExemplar) == 0) {
+            dialog.showMessageBox({ message: "Exemplar já devolvido" });
+        } else {
+            var d = new Date(controlEmprestimo.selecionarPorExemplar(fkExemplar).devolucao);
+            var dt1 = d;
+            var dt2 = new Date();
+            var debito = (Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate())) / (1000 * 60 * 60 * 24)) * controlConfiguracao.selecionar()[0].valorDebito);
+            if (debito < 0) {
+                debito = 0;
+            }
+            if (controlEmprestimo.devolver(fkExemplar, debito)) {
+                dialog.showMessageBox({ message: "Devolvido" });
+            } else {
+                dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+            }
+        }
+    }
+
+</script>

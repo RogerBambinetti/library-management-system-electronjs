@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Edição de gênero</h2>
+        </div>
+        <div class="column one">
+            <label>Gênero:</label>
+            <select id="pkGenero" onchange="atualizar()">
+            </select>
+            <label>Nome:</label>
+            <input type="text" id="nome">
+            <button type="button" onclick="editar()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlGenero = require('../control/ControlGenero');
+
+    var controlGenero = new ControlGenero();
+
+    function preencher() {
+        var generos = controlGenero.listar();
+        document.getElementById("pkGenero").innerHTML = '';
+        generos.forEach(g => {
+            document.getElementById("pkGenero").innerHTML += '<option value="' + g.pkGenero + '">' + g.nome + '</option>';
+        });
+    }
+
+    preencher();
+    atualizar();
+
+    function atualizar() {
+        var genero = controlGenero.selecionar(document.getElementById("pkGenero").value)[0];
+        document.getElementById("nome").value = genero.nome;
+    }
+
+    function editar() {
+        var pkGenero = document.getElementById("pkGenero").value;
+        var nome = document.getElementById("nome").value;
+        if (controlGenero.editar(pkGenero, nome)) {
+            dialog.showMessageBox({ message: "Editado" });
+        } else {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        preencher();
+        atualizar();
+    }
+
+</script>

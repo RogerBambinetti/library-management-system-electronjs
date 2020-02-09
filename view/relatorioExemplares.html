@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Relatório de exemplares</h2>
+        </div>
+
+        <table>
+            <tbody id="tabela">
+                <tr>
+                    <th>Código</th>
+                    <th>Número</th>
+                    <th>Número</th>
+                    <th>Ações</th>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlExemplar = require('../control/ControlExemplar');
+    var ControlObra = require('../control/ControlObra');
+
+    var controlExemplar = new ControlExemplar();
+    var controlObra = new ControlObra();
+
+    preencher();
+
+    function preencher() {
+        var exemplares = controlExemplar.listar();
+
+        document.getElementById("tabela").innerHTML = "<tr><th>Código</th><th>Número</th><th>Número</th><th>Ações</th></tr>";
+
+        exemplares.forEach(e => {
+            var obra;
+            if (controlObra.selecionar(e.fkObra) == false) {
+                obra = "Obra deletada";
+            } else {
+                obra = controlObra.selecionar(e.fkObra)[0].titulo;
+            }
+            document.getElementById("tabela").innerHTML += '<tr><td>' + e.pkExemplar + '</td> <td>' + e.numero + '</td> <td>' + obra + '</td> <td><button id="' + e.pkExemplar + '" onclick="excluir(this.id)">Excluir</button></td></tr>';
+        });
+    }
+
+    function excluir(pkExemplar) {
+        var confirmacao = dialog.showMessageBox({ buttons: ["Não", "Sim"], message: "Você realmente deseja excluir isso?" });
+        if (confirmacao) {
+            controlExemplar.excluir(pkExemplar);
+            preencher();
+        }
+    }
+</script>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Cadastro de obra</h2>
+        </div>
+        <div class="column one">
+            <label>Título:</label>
+            <input type="text" id="titulo">
+            <label>Classificação:</label>
+            <input type="number" id="classificacao">
+            <label>Ano:</label>
+            <input type="number" id="ano">
+            <label>Autor:</label>
+            <input list="autores" id="fkAutor">
+            <datalist id="autores"></datalist>
+        </div>
+        <div class="column two">
+            <label>Editora:</label>
+            <input list="editoras" id="fkEditora">
+            <datalist id="editoras"></datalist>
+            <label>Gênero:</label>
+            <input list="generos" id="fkGenero">
+            <datalist id="generos"></datalist>
+            <label>Exemplares:</label>
+            <input type="number" value="1" id="exemplares">
+            <button type="button" onclick="cadastrar()">Concluir</button>
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlAutor = require('../control/ControlAutor');
+    var ControlEditora = require('../control/ControlEditora');
+    var ControlExemplar = require('../control/ControlExemplar');
+    var ControlGenero = require('../control/ControlGenero');
+    var ControlObra = require('../control/ControlObra');
+
+    var controlAutor = new ControlAutor();
+    var controlEditora = new ControlEditora();
+    var controlExemplar = new ControlExemplar();
+    var controlGenero = new ControlGenero();
+    var controlObra = new ControlObra();
+
+    var autores = controlAutor.listar();
+    var editoras = controlEditora.listar();
+    var generos = controlGenero.listar();
+
+    autores.forEach(a => {
+        document.getElementById("autores").innerHTML += '<option value="' + a.nome + '">';
+    });
+    editoras.forEach(e => {
+        document.getElementById("editoras").innerHTML += '<option value="' + e.nome + '">';
+    });
+    generos.forEach(g => {
+        document.getElementById("generos").innerHTML += '<option value="' + g.nome + '">';
+    });
+
+    function cadastrar() {
+        var titulo = document.getElementById("titulo").value;
+        var classificacao = document.getElementById("classificacao").value;
+        var ano = document.getElementById("ano").value;
+        var fkAutor;
+        var fkEditora;
+        var fkGenero;
+        var exemplares = document.getElementById("exemplares").value;;
+        if (controlAutor.verificar(document.getElementById("fkAutor").value).length) {
+            fkAutor = controlAutor.verificar(document.getElementById("fkAutor").value)[0].pkAutor;
+        } else {
+            controlAutor.inserir(document.getElementById("fkAutor").value);
+            fkAutor = controlAutor.selecionarUltimopkAutor();
+        }
+        if (controlEditora.verificar(document.getElementById("fkEditora").value).length) {
+            fkEditora = controlEditora.verificar(document.getElementById("fkEditora").value)[0].pkEditora;
+        } else {
+            controlEditora.inserir(document.getElementById("fkEditora").value);
+            fkEditora = controlEditora.selecionarUltimopkEditora();
+        }
+        if (controlGenero.verificar(document.getElementById("fkGenero").value).length) {
+            fkGenero = controlGenero.verificar(document.getElementById("fkGenero").value)[0].pkGenero;
+        } else {
+            controlGenero.inserir(document.getElementById("fkGenero").value);
+            fkGenero = controlGenero.selecionarUltimopkGenero();
+        }
+        if (controlObra.inserir(titulo, classificacao, ano, fkGenero, fkEditora, fkAutor)) {
+
+            var cont = 0;
+            for (var i = 0; i < exemplares; i++) {
+                var fkObra = controlObra.selecionarUltimopkObra();
+                var numero = (controlExemplar.contar(fkObra)) + 1;
+                if (controlExemplar.inserir(numero, fkObra)) {
+                    cont++;
+                }
+            }
+            if (cont > 0) {
+                var ultimosExemplares = controlExemplar.listarUltimos(exemplares);
+                var mensagem = "";
+                ultimosExemplares.forEach(e => {
+                    var situacao;
+                    mensagem += "Exemplar " + e.numero + " - " + e.pkExemplar + "\n";
+                });
+                if (ultimosExemplares.length != 0) {
+                    dialog.showMessageBox({ message: mensagem });
+                }
+                dialog.showMessageBox({ message: "Cadastrado" });
+            }
+
+        } else {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+    }
+</script>

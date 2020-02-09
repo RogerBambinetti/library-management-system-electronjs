@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <h2>Empréstimo</h2>
+        </div>
+        <div class="column one">
+            <label>Exemplar:</label>
+            <input type="number" id="fkExemplar">
+            <label>Usuário:</label>
+            <select id="fkUsuario"></select>
+            <button type="button" onclick="emprestar()">Concluir</button>
+        </div>
+        <div class="column two">
+
+        </div>
+    </div>
+</body>
+
+<script>
+    "use strict";
+    const { dialog } = require('electron').remote;
+    var ControlConfiguracao = require('../control/ControlConfiguracao');
+    var ControlEmprestimo = require('../control/ControlEmprestimo');
+    var ControlExemplar = require('../control/ControlExemplar');
+    var ControlObra = require('../control/ControlObra');
+    var ControlUsuario = require('../control/ControlUsuario');
+
+    var controlConfiguracao = new ControlConfiguracao();
+    var controlEmprestimo = new ControlEmprestimo();
+    var controlExemplar = new ControlExemplar();
+    var controlObra = new ControlObra();
+    var controlUsuario = new ControlUsuario();
+
+    var usuarios = controlUsuario.listar();
+
+    usuarios.forEach(u => {
+        document.getElementById("fkUsuario").innerHTML += '<option value="' + u.pkUsuario + '">' + u.nome + '</option>';
+    });
+
+    function emprestar() {
+        var fkExemplar = document.getElementById("fkExemplar").value;
+        var fkUsuario = document.getElementById("fkUsuario").value;
+        var diasEmprestimo = controlConfiguracao.selecionar()[0].diasEmprestimo;
+
+        if (fkExemplar.length == 0) {
+            dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+        }
+        if (controlEmprestimo.contar(fkExemplar) > 0) {
+            dialog.showMessageBox({ message: "Exemplar já emprestado" });
+        } else {
+            var o = controlObra.selecionar((controlExemplar.selecionar(fkExemplar))[0].fkObra)[0];
+            var u = controlUsuario.selecionar(fkUsuario)[0];
+            if (controlUsuario.calcularIdade(u.nascimento) >= o.classificacao) {
+                if (controlEmprestimo.emprestar(fkExemplar, fkUsuario, diasEmprestimo)) {
+                    dialog.showMessageBox({ message: "Emprestado" });
+                } else {
+                    dialog.showMessageBox({ message: "Todos os campos devem estar preenchidos" });
+                }
+            } else {
+                dialog.showMessageBox({ message: "Classificação inadequada para o usuário" });
+            }
+        }
+    }
+
+</script>
